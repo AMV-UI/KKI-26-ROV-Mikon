@@ -192,12 +192,12 @@ void AP_Motors6DOF::setup_motors(motor_frame_class frame_class,
   case SUB_FRAME_VECTORED_AMV_ROV:
     _frame_class_string = "VECTORED_AMV_ROV";
     // --- CUSTOM MOTOR MATRIX START ---
-    add_motor_raw_6dof(AP_MOTORS_MOT_1, 0.0f, 0.0f, 1.0f, 0.0f, -1.0f, 1.0f, 1);
-    add_motor_raw_6dof(AP_MOTORS_MOT_2, 0.0f, 0.0f, -1.0f, 0.0f, -1.0f, -1.0f, 2);
-    add_motor_raw_6dof(AP_MOTORS_MOT_3, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f, 1.0f, 3);
+    add_motor_raw_6dof(AP_MOTORS_MOT_1, 0.0f, 0.0f, 1.0f, 0.0f, -0.9f, 1.0f, 1);
+    add_motor_raw_6dof(AP_MOTORS_MOT_2, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 2);
+    add_motor_raw_6dof(AP_MOTORS_MOT_3, 0.0f, 0.0f, -1.0f, 0.0f, 0.9f, 1.0f, 3);
     add_motor_raw_6dof(AP_MOTORS_MOT_4, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, -1.0f, 4);
-    add_motor_raw_6dof(AP_MOTORS_MOT_5, 1.0f, 0.0f, 0.0f, -0.75f, 0.0f, 0.0f, 5);
-    add_motor_raw_6dof(AP_MOTORS_MOT_6, -1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, 6);
+    add_motor_raw_6dof(AP_MOTORS_MOT_5, 1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, 5);
+    add_motor_raw_6dof(AP_MOTORS_MOT_6, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 6);
     // --- CUSTOM MOTOR MATRIX END ---
     // add_motor_raw_6dof(AP_MOTORS_MOT_1, 0.0f, 0.0f, 1.0f, 0.0f, -0.866f,
     // 0.5f, 1); add_motor_raw_6dof(AP_MOTORS_MOT_2, 0.0f, 0.0f, -1.0f, 0.0f,
@@ -304,9 +304,24 @@ void AP_Motors6DOF::output_to_motors() {
   }
 
   // send output to each motor
+  // --- CUSTOM MOTOR RANGE START ---
+  const int mot_min[6] = { 1300, 1300, 1300, 1300, 1300, 1300 };
+  const int mot_max[6] = { 1700, 1700, 1700, 1700, 1700, 1650 };
+  // --- CUSTOM MOTOR RANGE END ---
   for (i = 0; i < AP_MOTORS_MAX_NUM_MOTORS; i++) {
     if (motor_enabled[i]) {
-      rc_write(i, motor_out[i]);
+      if (i < 6) {
+        if (mot_min[i] > motor_out[i]) {
+          rc_write(i, mot_min[i]);
+        } else if (mot_max[i] < motor_out[i]) {
+          rc_write(i, mot_max[i]);
+        } else {
+
+          rc_write(i, motor_out[i]);
+        }
+      } else {
+        rc_write(i, motor_out[i]);
+      }
     }
   }
 }
